@@ -51,8 +51,7 @@ struct AddressController: RouteCollection {
     
     // MARK: - Delete
     func delete(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        // Get customer
-        return Customer
+        return Address
             .find(req.parameters.get("address"), on: req.db)
             .unwrap(or: Abort(.notFound))
             .map { address in

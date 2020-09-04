@@ -7,6 +7,12 @@ struct CreateTeam: Migration {
             .field("name", .string, .required)
             .field("username", .string, .required)
             .field("password_hash", .string, .required)
+            .field("company_name", .string)
+            .field("address_hq", .string)
+            .field("address_hq_city", .string)
+            .field("website", .string)
+            .field("fields", .array(of: .string))
+            .field("image_url", .string)
             .unique(on: "username")
             .create()
     }

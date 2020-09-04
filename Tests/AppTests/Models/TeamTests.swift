@@ -24,6 +24,9 @@ struct TeamTests {
         try login()
         try loginWrongUsername()
         try loginWrongPassword()
+        try setTeamdata()
+        try setTeamdataWithEmptyName()
+        try setTeamdataWithWrongWebsite()
         try getTeamdata()
         try getTeamdataWrongToken()
     }
@@ -111,7 +114,7 @@ struct TeamTests {
         }
     }
     
-    // MARK: - Team data
+    // MARK: - Get team data
     func getTeamdata() throws {
         app.logger.info("[Team] Getting team data")
         
@@ -130,6 +133,58 @@ struct TeamTests {
             "Authorization": "Bearer wrong-token-here"
         ]) { res in
             XCTAssertEqual(res.status, .unauthorized)
+        }
+    }
+    
+    // MARK: - Set team data
+    func setTeamdata() throws {
+        app.logger.info("[Team] Setting team data")
+        
+        // Get team data
+        try app.test(.PATCH, "teams/profile", headers: [
+            "Authorization": "Bearer \(self.token)"
+        ], beforeRequest: { req in
+            let payload = Team.Update(name: "Development Team v2",
+                        company: "DevTeam Industries",
+                        website: "https://www.example.org",
+                        fields: [
+                            "We're open from 9am to 6pm!"
+                        ])
+            
+            try req.content.encode(payload)
+        }) { res in
+            XCTAssertEqual(res.status, .ok)
+        }
+    }
+    
+    func setTeamdataWithEmptyName() throws {
+        app.logger.info("[Team] Setting team data with empty name")
+        
+        // Get team data
+        try app.test(.PATCH, "teams/profile", headers: [
+            "Authorization": "Bearer \(self.token)"
+        ], beforeRequest: { req in
+            try req.content.encode([
+                "name": ""
+            ])
+        }) { res in
+            XCTAssertEqual(res.status, .badRequest)
+        }
+    }
+    
+    func setTeamdataWithWrongWebsite() throws {
+        app.logger.info("[Team] Setting team data with wrong website")
+        
+        // Get team data
+        try app.test(.PATCH, "teams/profile", headers: [
+            "Authorization": "Bearer \(self.token)"
+        ], beforeRequest: { req in
+            try req.content.encode([
+                "name": "My Team",
+                "website": "hello world"
+            ])
+        }) { res in
+            XCTAssertEqual(res.status, .badRequest)
         }
     }
 }

@@ -8,7 +8,13 @@
 import Fluent
 import Vapor
 
-struct CustomerController: RouteCollection {
+struct CustomerController: RouteCollection, CRUD {
+    // MARK: - Type
+    typealias APIModel = Customer
+    
+    // MARK: - Team
+    var parent: KeyPath<Customer, ParentProperty<Customer, Team>> = \.$team
+    
     // MARK: - Constructor
     func boot(routes: RoutesBuilder) throws {
         // Authentication
@@ -34,38 +40,6 @@ struct CustomerController: RouteCollection {
             // Register addresses
             try sub.register(collection: AddressController())
         }
-    }
-    
-    // MARK: - Fetch every customers
-    func fetch(_ req: Request) throws -> EventLoopFuture<Page<Customer>> {
-        // Get team
-        let team = try req.auth.require(Team.self)
-        
-        // Get every customers
-        return Customer.query(on: req.db)
-            .join(Team.self, on: \Customer.$team.$id == \Team.$id)
-            .filter(Team.self, try \.$id == team.requireID())
-            .paginate(for: req)
-    }
-    
-    // MARK: - Get a customer
-    func get(_ req: Request) throws -> EventLoopFuture<Customer> {
-        // Get team
-        let team = try req.auth.require(Team.self)
-        
-        // Get ID
-        guard let id = req.parameters.get("id", as: Customer.IDValue.self) else {
-            throw Abort(.notFound)
-        }
-        
-        // Get customer
-        return Customer.query(on: req.db)
-            .filter(\.$id == id)
-            .join(Team.self, on: \Customer.$team.$id == \Team.$id)
-            .filter(Team.self, try \.$id == team.requireID())
-            .with(\.$addresses)
-            .first()
-            .unwrap(or: Abort(.notFound))
     }
     
     // MARK: - Create
@@ -132,27 +106,6 @@ struct CustomerController: RouteCollection {
                 
                 // Update
                 return customer.update(on: req.db)
-            }
-            .transform(to: .ok)
-    }
-    
-    // MARK: - Delete
-    func delete(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        // Get team
-        let team = try req.auth.require(Team.self)
-        
-        // Get customer
-        return Customer
-            .find(req.parameters.get("id"), on: req.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMapThrowing { customer -> EventLoopFuture<Void> in
-                // Check ownership
-                if try customer.$team.id != team.requireID() {
-                    throw Abort(.forbidden)
-                }
-                
-                // Update
-                return customer.delete(on: req.db)
             }
             .transform(to: .ok)
     }

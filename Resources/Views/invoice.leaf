@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>PDF Rendering</title>
+    <link rel="stylesheet" href="/styles/style.css">
+</head>
+
+<body>
+    <div class="invoice-box">
+        <table cellpadding="0" cellspacing="0">
+            <tr class="top">
+                <td colspan="3">
+                    <table>
+                        <tr>
+                            <td class="title">
+                                <img src="#(invoice.team.image)" style="width:100%; max-width:500px;">
+                            </td>
+
+                            <td></td>
+
+                            <td>
+                                #if(invoice.type == "invoice"): 
+                                    Facture #(invoice.number)
+                                #else(): 
+                                    Devis #(invoice.number)
+                                #endif
+                                <br> 
+                                Date: <span id="date">#(invoice.createdAt)</span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <tr class="information">
+                <td colspan="3">
+                    <table>
+                        <tr>
+                            <td>
+                                #(invoice.team.company)<br>
+                                #(invoice.team.address)<br>
+                                #(invoice.team.city)<br>
+                                #(invoice.team.website)
+                            </td>
+
+                            <td></td>
+
+                            <td>
+                                #(invoice.customer.firstName) #(invoice.customer.lastName)<br>
+                                #if(invoice.customer.company != null):
+                                    #(invoice.customer.company)<br>
+                                #endif
+                                #(invoice.address.line)<br>
+                                #(invoice.address.zip), #(invoice.address.city)
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <tr class="heading">
+                <td>
+                    Description
+                </td>
+
+                <td width="175px" align="right">
+                    T.V.A.
+                </td>
+
+                <td width="125px" align="right">
+                    Prix H.T.
+                </td>
+            </tr>
+
+            #for(field in invoice.fields):
+            <tr>
+                <td>
+                    #(field.name)
+                </td>
+
+                <td align="right">
+                    #(field.vat) %
+                </td>
+
+                <td align="right">
+                    #getFixed(field.price) €
+                </td>
+            </tr>
+            #endfor
+
+            <tr class="total">
+                <td></td>
+
+                <td align="right">
+                    Total H.T.:
+                </td>
+
+                <td align="left">
+                    #getFixed(prices.totalWV) €
+                </td>
+            </tr>
+
+            <tr>
+                <td></td>
+
+                <td align="right">
+                    Total T.V.A.:
+                </td>
+
+                <td align="left">
+                    #getFixed(prices.VAT) €
+                </td>
+            </tr>
+
+            #if(invoice.promotion > 0):
+                <tr>
+                    <td></td>
+
+                    <td align="right">
+                       Remise commerciale:
+                    </td>
+
+                    <td align="left">
+                        - #getFixed(prices.promotion) €
+                    </td>
+                </tr>
+            #endif
+
+            #if(invoice.deposit > 0):
+                <tr>
+                    <td></td>
+
+                    <td align="right">
+                       Acompte: 
+                    </td>
+
+                    <td align="left">
+                        - #getFixed(invoice.deposit) €
+                    </td>
+                </tr>
+            #endif
+
+            <tr>
+                <td></td>
+
+                <td align="right">
+                <b>
+                    #if(invoice.type == "quote"):
+                        Total:
+                    #else():
+                        Reste à payer:
+                    #endif
+                </b>
+                </td>
+
+                <td align="left">
+                    <b>#getFixed(prices.final) €</b>
+                </td>
+            </tr>
+        </table>
+
+        <br>
+
+        <ul>
+            #for(entry in invoice.team.fields):
+                <li>#(entry)</li>
+            #endfor
+        </ul>
+    </div>
+
+    <script>
+        let dateField = document.getElementById("date")
+        let date = new Date(0)
+        date.setUTCSeconds(dateField.innerText)
+        dateField.innerText = date.toLocaleDateString()
+    </script>
+</body>
+
+</html>

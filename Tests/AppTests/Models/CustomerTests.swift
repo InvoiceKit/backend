@@ -13,8 +13,8 @@ struct CustomerTests {
     // MARK: - Initializers
     private var app: Application
     private var token: String
-    private var id: UUID?
-    private var address: UUID?
+    public var id: UUID?
+    public var address: UUID?
     
     init(app: Application, token: String) throws {
         // Set variables
@@ -33,8 +33,10 @@ struct CustomerTests {
         try patchCustomer()
         try addAddress()
         try addAddressWithoutdata()
+        // try deleteAddress() - Kept for InvoiceTesting
+        try deleteAddressWithWrongID()
         try deleteCustomerNotExists()
-        try deleteCustomer()
+        // try deleteCustomer() - Kept for InvoiceTesting
         try deleteCustomerNotExists()
     }
     

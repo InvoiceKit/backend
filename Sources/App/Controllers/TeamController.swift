@@ -25,6 +25,9 @@ struct TeamController: RouteCollection {
         
         // Route: GET /teams/profile
         token.get("profile", use: fetch)
+        
+        // Route: PATCH /teams/profile
+        token.patch("profile", use: patch)
     }
 
     // MARK: - Register
@@ -74,5 +77,35 @@ struct TeamController: RouteCollection {
     // MARK: - User data
     func fetch(_ req: Request) throws -> Team {
         try req.auth.require(Team.self)
+    }
+    
+    // MARK: - Patch data
+    func patch(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
+        // Get user
+        let user = try req.auth.require(Team.self)
+        
+        // Validate content
+        try Team.Update.validate(req)
+        
+        // Get content
+        let content = try req.content.decode(Team.Update.self)
+        
+        // Get model
+        return Team.find(user.id, on: req.db)
+            .unwrap(or: Abort(.notFound))
+            .flatMapThrowing { team -> EventLoopFuture<Void> in
+                // Set content
+                team.name = content.name ?? team.name
+                team.company = content.company ?? team.company
+                team.address = content.address ?? team.address
+                team.city = content.city ?? team.city
+                team.website = content.website ?? team.website
+                team.fields = content.fields ?? team.fields
+                team.image = content.image ?? team.image
+                
+                // Update
+                return team.update(on: req.db)
+            }
+            .transform(to: .ok)
     }
 }

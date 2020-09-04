@@ -13,6 +13,11 @@ final class AppTests: XCTestCase {
         
         // Start tests
         let team = try TeamTests(app)
-        let _ = try CustomerTests(app: app, token: team.token)
+        let customer = try CustomerTests(app: app, token: team.token)
+        _ = try InvoiceTests(app: app, token: team.token, customer: customer.id, address: customer.address)
+        
+        // Finish the CustomerTests
+        try customer.deleteAddress()
+        try customer.deleteCustomer()
     }
 }
