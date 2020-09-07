@@ -42,6 +42,15 @@ struct CustomerController: RouteCollection, CRUD {
         }
     }
     
+    func get(_ req: Request) throws -> EventLoopFuture<Customer> {
+        // Get filtered entry
+        return Customer.query(on: req.db)
+            .filter(try \.$id == getId(req))
+            .with(\.$addresses)
+            .first()
+            .unwrap(or: Abort(.notFound))
+    }
+    
     // MARK: - Create
     func create(_ req: Request) throws -> EventLoopFuture<Customer> {
         // Get team
