@@ -136,7 +136,6 @@ final class InvoiceController: RouteCollection, CRUD {
             .with(\.$fields)
             .with(\.$address)
             .with(\.$customer)
-            .sort(InvoiceField.self, \InvoiceField.$createdAt)
             .first()
             .unwrap(or: Abort(.notFound))
             .map { invoice in
