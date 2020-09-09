@@ -26,8 +26,6 @@ func routes(_ app: Application) throws {
     let cors = CORSMiddleware(configuration: corsConfiguration)
     let error = ErrorMiddleware.default(environment: app.environment)
     
-    // Clear any existing middleware.
-    app.middleware = .init()
     app.middleware.use(cors)
     app.middleware.use(error)
     
