@@ -96,12 +96,12 @@ struct TeamController: RouteCollection {
             .flatMapThrowing { team -> EventLoopFuture<Void> in
                 // Set content
                 team.name = content.name ?? team.name
-                team.company = content.company ?? team.company
-                team.address = content.address ?? team.address
-                team.city = content.city ?? team.city
-                team.website = content.website ?? team.website
-                team.fields = content.fields ?? team.fields
-                team.image = content.image ?? team.image
+                team.company = content.company
+                team.address = content.address
+                team.city = content.city
+                team.website = content.website
+                team.fields = content.fields
+                team.image = content.image
                 
                 // Update
                 return team.update(on: req.db)

@@ -197,9 +197,9 @@ final class InvoiceController: RouteCollection, CRUD {
                 // Replace values
                 model.type = content.type ?? model.type
                 model.status = content.status ?? model.status
-                model.number = content.number ?? model.number
-                model.deposit = content.deposit ?? model.deposit
-                model.promotion =  content.promotion ?? model.promotion
+                model.number = content.number
+                model.deposit = content.deposit
+                model.promotion =  content.promotion
                 
                 // Update
                 return model.update(on: req.db)

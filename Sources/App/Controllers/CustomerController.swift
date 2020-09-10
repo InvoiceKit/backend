@@ -107,11 +107,11 @@ struct CustomerController: RouteCollection, CRUD {
                 }
                 
                 // Replace values
-                customer.firstName = content.firstName ?? customer.firstName
-                customer.lastName = content.lastName ?? customer.lastName
-                customer.company = content.company ?? customer.company
-                customer.phone = content.phone ?? customer.phone
-                customer.email = content.email ?? customer.email
+                customer.firstName = content.firstName
+                customer.lastName = content.lastName
+                customer.company = content.company
+                customer.phone = content.phone
+                customer.email = content.email
                 
                 // Update
                 return customer.update(on: req.db)
