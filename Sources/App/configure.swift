@@ -29,6 +29,9 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateAddress())
     app.migrations.add(CreateInvoice())
     app.migrations.add(CreateInvoiceField())
+    
+    // Enable auto-migrations
+    try app.autoMigrate().wait()
 
     // Register routes
     try routes(app)
