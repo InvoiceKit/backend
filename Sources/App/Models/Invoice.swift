@@ -97,18 +97,18 @@ final class Invoice: Model, Content {
     
     // MARK: - Update
     struct Update: Content, Validatable {
-        var type: InvoiceType?
-        var status: InvoiceStatus?
-        var number: String?
-        var deposit: Double?
-        var promotion: Int?
+        var type: InvoiceType
+        var status: InvoiceStatus
+        var number: String
+        var deposit: Double
+        var promotion: Int
         
         static func validations(_ validations: inout Validations) {
-            validations.add("type", as: InvoiceType.self, required: false)
-            validations.add("status", as: InvoiceStatus.self, required: false)
-            validations.add("number", as: String.self, required: false)
-            validations.add("deposit", as: Double.self, required: false)
-            validations.add("promotion", as: Int.self, required: false)
+            validations.add("type", as: InvoiceType.self)
+            validations.add("status", as: InvoiceStatus.self)
+            validations.add("number", as: String.self)
+            validations.add("deposit", as: Double.self)
+            validations.add("promotion", as: Int.self)
         }
     }
     

@@ -195,8 +195,8 @@ final class InvoiceController: RouteCollection, CRUD {
                 }
                 
                 // Replace values
-                model.type = content.type ?? model.type
-                model.status = content.status ?? model.status
+                model.type = content.type
+                model.status = content.status
                 model.number = content.number
                 model.deposit = content.deposit
                 model.promotion =  content.promotion
