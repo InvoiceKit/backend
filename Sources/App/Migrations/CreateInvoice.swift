@@ -24,7 +24,6 @@ struct CreateInvoice: Migration {
             .field("number", .string)
             .field("deposit", .double)
             .field("promotion", .int)
-            .unique(on: "number")
             .create()
     }
     
