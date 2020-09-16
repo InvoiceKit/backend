@@ -15,8 +15,6 @@ struct DoubleFix: LeafTag {
             throw "the given parameter is not a double"
         }
         
-        print(number)
-        
         return .string(String(format: "%.2f", number))
     }
     

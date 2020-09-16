@@ -2,6 +2,7 @@ import Fluent
 import FluentSQLiteDriver
 import Vapor
 import Leaf
+import JWT
 
 // configures your application
 public func configure(_ app: Application) throws {
@@ -24,7 +25,6 @@ public func configure(_ app: Application) throws {
     
     // Add migrations
     app.migrations.add(CreateTeam())
-    app.migrations.add(CreateToken())
     app.migrations.add(CreateCustomer())
     app.migrations.add(CreateAddress())
     app.migrations.add(CreateInvoice())
@@ -33,6 +33,15 @@ public func configure(_ app: Application) throws {
     // Enable auto-migrations
     try app.autoMigrate().wait()
 
+    if app.environment == .testing || app.environment == .development {
+        // Setup JWT with a static key
+        app.jwt.signers.use(.hs256(key: "secret"))
+    } else {
+        // Setup JWT with a random key per start
+        app.jwt.signers.use(.hs256(key: String.random(length: 64)))
+    }
+    
+    
     // Register routes
     try routes(app)
 }

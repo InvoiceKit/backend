@@ -19,6 +19,7 @@ struct CreateInvoice: Migration {
             .foreignKey("address_id", references: "addresses", "id", onDelete: .restrict)
             .field("created_at", .date)
             .field("updated_at", .date)
+            .field("due_date", .date)
             .field("type", .string, .required)
             .field("status", .string, .required)
             .field("number", .string)

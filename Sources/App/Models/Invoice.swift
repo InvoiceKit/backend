@@ -8,15 +8,12 @@
 import Vapor
 import Fluent
 
-final class Invoice: Model, Content {
+final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
     // MARK: - Model
     static var schema = "invoices"
     
     @ID(key: .id)
     var id: UUID?
-    
-    @Parent(key: "team_id")
-    var team: Team
     
     @Parent(key: "customer_id")
     var customer: Customer
@@ -24,7 +21,7 @@ final class Invoice: Model, Content {
     @Parent(key: "address_id")
     var address: Address
     
-    @Children(for: \.$invoice)
+    @Children(for: \._parent)
     var fields: [InvoiceField]
     
     @Timestamp(key: "created_at", on: .create)
@@ -32,6 +29,9 @@ final class Invoice: Model, Content {
     
     @Timestamp(key: "updated_at", on: .update)
     var updatedAt: Date?
+    
+    @Field(key: "due_date")
+    var dueDate: String?
     
     @Field(key: "type")
     var type: InvoiceType
@@ -41,7 +41,7 @@ final class Invoice: Model, Content {
     
     @Field(key: "number")
     var number: String?
-
+    
     @Field(key: "deposit")
     var deposit: Double?
     
@@ -62,11 +62,12 @@ final class Invoice: Model, Content {
         
     }
     
-    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, type: InvoiceType, status: InvoiceStatus, number: String?, deposit: Double? = 0, promotion: Int? = 0) {
+    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, dueDate: String?, type: InvoiceType, status: InvoiceStatus, number: String?, deposit: Double? = 0, promotion: Int? = 0) {
         self.id = id
-        self.$team.id = teamID
+        self._parent.id = teamID
         self.$customer.id = customerID
         self.$address.id = addressID
+        self.dueDate = dueDate
         self.type = type
         self.status = status
         self.number = number
@@ -74,75 +75,133 @@ final class Invoice: Model, Content {
         self.promotion = promotion
     }
     
-    // MARK: - Validations
-    struct Create: Content, Validatable {
+    // MARK: - Relatable
+    typealias ParentType = Team
+    
+    static var isAuthChildren = true
+    
+    var _parent: Parent<Team> = Parent(key: "team_id")
+    
+    // MARK: - Input
+    struct Input: Content {
         var customerID: Customer.IDValue
         var addressID: Address.IDValue
+        var dueDate: String?
         var type: InvoiceType
         var status: InvoiceStatus
         var number: String?
         var deposit: Double?
         var promotion: Int?
-        
-        static func validations(_ validations: inout Validations) {
-            validations.add("customerID", as: Customer.IDValue.self, required: true)
-            validations.add("addressID", as: Address.IDValue.self, required: true)
-            validations.add("type", as: InvoiceType.self, required: true)
-            validations.add("status", as: InvoiceStatus.self, required: true)
-            validations.add("number", as: String.self, required: false)
-            validations.add("deposit", as: Double.self, required: false)
-            validations.add("promotion", as: Int.self, required: false)
-        }
     }
     
-    // MARK: - Update
-    struct Update: Content, Validatable {
+    convenience init(_ input: Input) throws {
+        self.init(
+            id: UUID(),
+            teamID: UUID(),
+            customerID: input.customerID,
+            addressID: input.addressID,
+            dueDate: input.dueDate,
+            type: input.type,
+            status: input.status,
+            number: input.number,
+            deposit: input.deposit,
+            promotion: input.promotion
+        )
+    }
+    
+    // MARK: - Patchable
+    struct Update: Content {
+        var dueDate: String?
         var type: InvoiceType
         var status: InvoiceStatus
-        var number: String
-        var deposit: Double
-        var promotion: Int
-        
-        static func validations(_ validations: inout Validations) {
-            validations.add("type", as: InvoiceType.self)
-            validations.add("status", as: InvoiceStatus.self)
-            validations.add("number", as: String.self)
-            validations.add("deposit", as: Double.self)
-            validations.add("promotion", as: Int.self)
-        }
+        var number: String?
+        var deposit: Double?
+        var promotion: Int?
+    }
+    
+    func update(_ update: Update) throws {
+        self.update(\.dueDate, using: update.dueDate)
+        self.update(\.type, using: update.type)
+        self.update(\.status, using: update.status)
+        self.update(\.number, using: update.number)
+        self.update(\.deposit, using: update.deposit)
+        self.update(\.promotion, using: update.promotion)
     }
     
     // MARK: - Output
-    struct Output: Content {
-        var invoice: Invoice
-        var prices: Prices
+    static func eagerLoad(to builder: QueryBuilder<Invoice>) -> QueryBuilder<Invoice> {
+        builder
+            .with(\.$fields)
+            .with(\._parent)
+            .with(\.$customer)
+            .with(\.$address)
     }
     
-    // MARK: - Price Output
-    struct Prices: Content {
-        ///
-        /// VAT total
-        ///
-        var VAT: Double
-        
-        ///
-        /// Total without VAT
-        ///
-        var totalWV: Double
-        
-        ///
-        /// Total with VAT
-        ///
+    struct Output: Content {
+        var id: Invoice.IDValue?
+        var team: Team
+        var customer: Customer
+        var address: Address
+        var createdAt: Date?
+        var updatedAt: Date?
+        var dueDate: String?
+        var type: InvoiceType
+        var status: InvoiceStatus
+        var fields: [InvoiceField]
+        var number: String?
+        var deposit: Double?
+        var promotion: Int?
+        var no_vat: Double
+        var vat: Double
         var total: Double
-        
-        ///
-        /// Promotion
-        ///
-        var promotion: Double
-        
-        ///
-        /// Final price with deposits and promotion
-        ///
+        var _promotion: Double
         var final: Double
+    }
+    
+    var output: Output {
+        // Prepare return
+        var ret = Output.init(
+            id: id,
+            team: _parent.wrappedValue,
+            customer: customer,
+            address: address,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            dueDate: dueDate,
+            type: type,
+            status: status,
+            fields: fields,
+            number: number,
+            deposit: deposit,
+            promotion: promotion,
+            no_vat: 0,
+            vat: 0,
+            total: 0,
+            _promotion: 0,
+            final: 0
+        )
+        
+        // Get every fields
+        for field in fields {
+            // Add no_vat
+            ret.no_vat += field.price
+            
+            // Get vat
+            let vat = (field.price * Double(field.vat)) / 100
+            ret.vat += vat
+            
+            // Set total
+            ret.total += vat + field.price
+        }
+        
+        // Calculate promotion
+        if let promo = promotion {
+            ret._promotion = (Double(promo) * ret.total) / 100
+        }
+        
+        // Set final price
+        ret.final = ret.total - ret._promotion - Double(deposit ?? 0)
+        
+        return ret
     }
 }

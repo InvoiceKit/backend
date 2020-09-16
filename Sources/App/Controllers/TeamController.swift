@@ -1,111 +1,64 @@
-///
-/// TeamController.swift
-///
+//
+//  TeamController.swift
+//  
+//
+//  Created by Victor Lourme on 14/09/2020.
+//
 
-import Fluent
 import Vapor
+import Fluent
 
-struct TeamController: RouteCollection {
-    // MARK: - Constructor
-    func boot(routes: RoutesBuilder) throws {
-        // Route: /teams
-        let root = routes.grouped("teams")
-        
-        // Route: PUT /teams/register
-        root.put("register", use: create)
-        
-        // Basic authentication guarded
-        let auth = root.grouped(Team.authenticator())
-        
-        // Route: POST /teams/login
-        auth.post("login", use: login)
-        
-        // Token guarded
-        let token = auth.grouped(Token.authenticator(), Team.guardMiddleware())
-        
-        // Route: GET /teams/profile
-        token.get("profile", use: fetch)
-        
-        // Route: PATCH /teams/profile
-        token.patch("profile", use: patch)
-    }
-
-    // MARK: - Register
-    func create(_ req: Request) throws -> EventLoopFuture<Team> {
-        // Try to validate
-        try Team.Create.validate(req)
-        
-        // Decode content
-        let content = try req.content.decode(Team.Create.self)
-        
-        // Hash the password
-        let passwordHash = try Bcrypt.hash(content.password)
-        
-        // Create the team
-        let team = Team(
-            name: content.name,
-            username: content.username,
-            passwordHash: passwordHash
-        )
-        
-        return team.save(on: req.db).flatMapErrorThrowing { error in
-            throw Abort(.badRequest)
-        }.map { team }
+extension GenericController where Model == Team {
+    @discardableResult
+    static func setupRoutes(_ builder: RoutesBuilder) -> RoutesBuilder {
+        return Builder(builder.grouped(schemaPath))
+            .set { $0.put(use: create) }
+            .set { $0.post("login", use: login) }
+            .set { $0.get(use: protected(using: Team.JWTPayload.self, handler: getTeam)) }
+            .set { $0.grouped(idPath) }
+            .set { $0.patch(use: protected(using: Team.JWTPayload.self, handler: _updateByID)) }
+            .build()
     }
     
-    // MARK: - Login
-    func login(_ req: Request) throws -> EventLoopFuture<Token.Response> {
-        // Check for auth
-        let team = try req.auth.require(Team.self)
+    static func create(_ req: Request) throws -> EventLoopFuture<Model.LoginResponse> {
+        let input = try req.content.decode(Model.Input.self)
         
-        // Generate a token
-        let token = try team.generateToken()
-        
-        // Prepare data
-        let response = Token.Response(
-            team: team,
-            token: token
-        )
-        
-        // Return the userdata with token
-        return token.save(on: req.db)
-            .map {
-                response
-            }
+        return try Model(input)
+            .save(on: req.db)
+            .transform(to: try login(
+                        Model.LoginRequest(
+                            username: input.username,
+                            password: input.password
+                        ), jwt: req.jwt, on: req.db))
     }
     
-    // MARK: - User data
-    func fetch(_ req: Request) throws -> Team {
-        try req.auth.require(Team.self)
+    static func login(_ req: Request) throws -> EventLoopFuture<Model.LoginResponse> {
+        return try login(req.content.decode(Model.LoginRequest.self), jwt: req.jwt, on: req.db)
     }
     
-    // MARK: - Patch data
-    func patch(_ req: Request) throws -> EventLoopFuture<HTTPStatus> {
-        // Get user
-        let user = try req.auth.require(Team.self)
-        
-        // Validate content
-        try Team.Update.validate(req)
-        
-        // Get content
-        let content = try req.content.decode(Team.Update.self)
-        
-        // Get model
-        return Team.find(user.id, on: req.db)
+    static func login(_ input: Model.LoginRequest, jwt: Request.JWT, on database: Database) throws -> EventLoopFuture<Model.LoginResponse> {
+        Model.eagerLoadedQuery(on: database)
+            .filter(\.$username == input.username)
+            .first()
             .unwrap(or: Abort(.notFound))
-            .flatMapThrowing { team -> EventLoopFuture<Void> in
-                // Set content
-                team.name = content.name ?? team.name
-                team.company = content.company
-                team.address = content.address
-                team.city = content.city
-                team.website = content.website
-                team.fields = content.fields
-                team.image = content.image
-                
-                // Update
-                return team.update(on: req.db)
+            .guard({
+                (try? Bcrypt.verify(input.password, created: $0.passwordHash)) == true
+            }, else: Abort(.unauthorized))
+            .flatMapThrowing {
+                Model.LoginResponse(token: try jwt.sign(
+                    Model.JWTPayload(
+                        sub: .init(value: $0.id!.uuidString),
+                        username: $0.username,
+                        exp: .init(value: Date().addingTimeInterval(3600 * 24 * 7)) // 7 days
+                    )
+                ))
             }
-            .transform(to: .ok)
+    }
+    
+    static func getTeam(_ req: Request) throws -> EventLoopFuture<Team> {
+        let payload = try req.auth.require(Team.JWTPayload.self)
+        
+        return Model.find(payload.teamID, on: req.db)
+            .unwrap(or: Abort(.notFound))
     }
 }

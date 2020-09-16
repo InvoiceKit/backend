@@ -30,7 +30,8 @@ func routes(_ app: Application) throws {
     app.middleware.use(error)
     
     // Routes
-    try app.register(collection: TeamController())
-    try app.register(collection: CustomerController())
-    try app.register(collection: InvoiceController())
+    let protected = app.grouped(Team.JWTAuth())
+    GenericController<Team>.setupRoutes(protected)
+    GenericController<Customer>.setupRoutes(protected)
+    GenericController<Invoice>.setupRoutes(protected)
 }

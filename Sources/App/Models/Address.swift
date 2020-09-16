@@ -8,15 +8,12 @@
 import Vapor
 import Fluent
 
-final class Address: Model, Content {
+final class Address: Content, APIModel, Relatable {
     // MARK: - Model
     static var schema = "addresses"
     
     @ID(key: .id)
     var id: UUID?
-    
-    @Parent(key: "customer_id")
-    var customer: Customer
     
     @Field(key: "line")
     var line: String
@@ -27,20 +24,28 @@ final class Address: Model, Content {
     @Field(key: "city")
     var city: String
     
+    // MARK: - Children
+    static var isChildren = true
+    
+    // MARK: - Parent
+    typealias ParentType = Customer
+    
+    var _parent: Parent<Customer> = Parent(key: "customer_id")
+    
     // MARK: - Initializers
     init() {
         
     }
     
     init(id: UUID? = nil, customerID: Customer.IDValue, line: String, zip: String, city: String) {
-        self.$customer.id = customerID
+        self._parent.id = customerID
         self.line = line
         self.zip = zip
         self.city = city
     }
     
     // MARK: - Create
-    struct Create: Content, Validatable {
+    struct Input: Content, Validatable {
         var line: String
         var zip: String
         var city: String
@@ -50,5 +55,14 @@ final class Address: Model, Content {
             validations.add("zip", as: String.self, is: !.empty)
             validations.add("city", as: String.self, is: !.empty)
         }
+    }
+    
+    convenience init(_ input: Input) throws {
+        self.init(
+            customerID: UUID(),
+            line: input.line,
+            zip: input.zip,
+            city: input.city
+        )
     }
 }

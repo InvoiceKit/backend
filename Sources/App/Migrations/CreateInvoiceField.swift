@@ -9,7 +9,7 @@ import Fluent
 
 struct CreateInvoiceField: Migration {
     func prepare(on database: Database) -> EventLoopFuture<Void> {
-        return database.schema("invoice_fields")
+        return database.schema("fields")
             .id()
             .field("invoice_id", .uuid, .references("invoices", "id"))
             .foreignKey("invoice_id", references: "invoices", "id", onDelete: .cascade)

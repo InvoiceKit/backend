@@ -15,19 +15,23 @@
                     <table>
                         <tr>
                             <td class="title">
-                                <img src="#(invoice.team.image)" style="width:100%; max-width:500px;">
+                                <img src="#(team.image)" style="width:100%; max-width:500px;">
                             </td>
 
                             <td></td>
 
                             <td>
-                                #if(invoice.type == "invoice"): 
-                                    Facture #(invoice.number)
+                                #if(type == "invoice"): 
+                                    Facture #(number)
                                 #else(): 
-                                    Devis #(invoice.number)
+                                    Devis #(number)
                                 #endif
                                 <br> 
-                                Date: <span id="date">#(invoice.createdAt)</span>
+                                Date: <span id="date">#(createdAt)</span>
+                                #if(dueDate != ""):
+                                <br>
+                                Date d'échéance: #(dueDate)
+                                #endif
                             </td>
                         </tr>
                     </table>
@@ -39,21 +43,21 @@
                     <table>
                         <tr>
                             <td>
-                                #(invoice.team.company)<br>
-                                #(invoice.team.address)<br>
-                                #(invoice.team.city)<br>
-                                #(invoice.team.website)
+                                #(team.company)<br>
+                                #(team.address)<br>
+                                #(team.city)<br>
+                                #(team.website)
                             </td>
 
                             <td></td>
 
                             <td>
-                                #(invoice.customer.firstName) #(invoice.customer.lastName)<br>
-                                #if(invoice.customer.company != null):
-                                    #(invoice.customer.company)<br>
+                                #(customer.firstName) #(customer.lastName)<br>
+                                #if(customer.company != null):
+                                    #(customer.company)<br>
                                 #endif
-                                #(invoice.address.line)<br>
-                                #(invoice.address.zip), #(invoice.address.city)
+                                #(address.line)<br>
+                                #(address.zip), #(address.city)
                             </td>
                         </tr>
                     </table>
@@ -74,7 +78,7 @@
                 </td>
             </tr>
 
-            #for(field in invoice.fields):
+            #for(field in fields):
             <tr>
                 <td>
                     #(field.name)
@@ -98,7 +102,7 @@
                 </td>
 
                 <td align="left">
-                    #getFixed(prices.totalWV) €
+                    #getFixed(no_vat) €
                 </td>
             </tr>
 
@@ -110,11 +114,11 @@
                 </td>
 
                 <td align="left">
-                    #getFixed(prices.VAT) €
+                    #getFixed(vat) €
                 </td>
             </tr>
 
-            #if(invoice.promotion > 0):
+            #if(promotion > 0):
                 <tr>
                     <td></td>
 
@@ -123,12 +127,12 @@
                     </td>
 
                     <td align="left">
-                        - #getFixed(prices.promotion) €
+                        - #getFixed(promotion) €
                     </td>
                 </tr>
             #endif
 
-            #if(invoice.deposit > 0):
+            #if(deposit > 0):
                 <tr>
                     <td></td>
 
@@ -137,7 +141,7 @@
                     </td>
 
                     <td align="left">
-                        - #getFixed(invoice.deposit) €
+                        - #getFixed(deposit) €
                     </td>
                 </tr>
             #endif
@@ -147,7 +151,7 @@
 
                 <td align="right">
                 <b>
-                    #if(invoice.type == "quote"):
+                    #if(type == "quote"):
                         Total:
                     #else():
                         Reste à payer:
@@ -156,18 +160,20 @@
                 </td>
 
                 <td align="left">
-                    <b>#getFixed(prices.final) €</b>
+                    <b>#getFixed(final) €</b>
                 </td>
             </tr>
         </table>
 
         <br>
 
+        #if(team.field):
         <ul>
-            #for(entry in invoice.team.fields):
+            #for(entry in team.fields):
                 <li>#(entry)</li>
             #endfor
         </ul>
+        #endif
     </div>
 
     <script>

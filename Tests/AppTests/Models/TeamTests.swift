@@ -86,7 +86,7 @@ struct TeamTests {
             XCTAssertEqual(res.status, .ok)
     
             // Set token
-            token = try res.content.decode(Token.Response.self).token.value
+            //token = try res.content.decode(Token.Response.self).token.value
         }
     }
     

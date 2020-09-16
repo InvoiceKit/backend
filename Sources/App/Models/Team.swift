@@ -4,16 +4,15 @@
 
 import Fluent
 import Vapor
+import JWT
 
-final class Team: Model, Content, ModelAuthenticatable {
+final class Team: Content, APIModel, Patchable {
     // MARK: - Model
     static let schema = "teams"
-    static let usernameKey = \Team.$username
-    static let passwordHashKey = \Team.$passwordHash
     
     @ID(key: .id)
     var id: UUID?
-
+    
     @Field(key: "name")
     var name: String
     
@@ -22,14 +21,17 @@ final class Team: Model, Content, ModelAuthenticatable {
     
     @Field(key: "password_hash")
     var passwordHash: String
-
-    @Field(key: "company_name")
+    
+    @Field(key: "company")
     var company: String?
     
-    @Field(key: "address_hq")
+    @Field(key: "address")
     var address: String?
     
-    @Field(key: "address_hq_city")
+    @Field(key: "zip")
+    var zip: String?
+    
+    @Field(key: "city")
     var city: String?
     
     @Field(key: "website")
@@ -43,7 +45,7 @@ final class Team: Model, Content, ModelAuthenticatable {
     
     // MARK: - Initializers
     init() { }
-
+    
     init(id: UUID? = nil, name: String, username: String, passwordHash: String, company: String? = nil, address: String? = nil, city: String? = nil, website: String? = nil, fields: [String]? = nil, image: String? = nil) {
         self.id = id
         self.name = name
@@ -57,20 +59,16 @@ final class Team: Model, Content, ModelAuthenticatable {
         self.image = image
     }
     
-    // MARK: - Authentication
-    func verify(password: String) throws -> Bool {
-        try Bcrypt.verify(password, created: self.passwordHash)
-    }
-    
-    func generateToken() throws -> Token {
-        try .init(
-            value: [UInt8].random(count: 32).base64,
-            teamID: self.requireID()
+    // MARK: - Creation
+    convenience init(_ input: Input) throws {
+        self.init(
+            name: input.name,
+            username: input.username,
+            passwordHash: try Bcrypt.hash(input.password)
         )
     }
     
-    // MARK: - Validation
-    struct Create: Content, Validatable {
+    struct Input: Content, Validatable {
         var name: String
         var username: String
         var password: String
@@ -82,24 +80,70 @@ final class Team: Model, Content, ModelAuthenticatable {
         }
     }
     
-    // MARK: - Patchable
-    struct Update: Content, Validatable {
+    // MARK: - Update
+    struct Update: Content {
         var name: String?
         var company: String?
         var address: String?
+        var zip: String?
         var city: String?
         var website: String?
         var fields: [String]?
         var image: String?
+    }
+    
+    func update(_ update: Update) throws {
+        self.update(\.name, using: update.name)
+        self.update(\.company, using: update.company)
+        self.update(\.address, using: update.address)
+        self.update(\.zip, using: update.zip)
+        self.update(\.city, using: update.city)
+        self.update(\.website, using: update.website)
+        self.update(\.fields, using: update.fields)
+        self.update(\.image, using: update.image)
         
-        static func validations(_ validations: inout Validations) {
-            validations.add("name", as: String.self, is: !.empty && .ascii, required: false)
-            validations.add("company", as: String.self, is: .ascii, required: false)
-            validations.add("address", as: String.self, is: .ascii, required: false)
-            validations.add("city", as: String.self, is: .ascii, required: false)
-            validations.add("website", as: String.self, is: .url, required: false)
-            validations.add("fields", as: [String?].self, required: false)
-            validations.add("image", as: String.self, is: .url, required: false)
+    }
+    
+    // MARK: - Login request
+    struct LoginRequest: Content {
+        var username: String
+        var password: String
+    }
+    
+    // MARK: - Login response
+    struct LoginResponse: Content {
+        var token: String
+    }
+    
+    // MARK: - JWT
+    struct JWTPayload: JWT.JWTPayload, Authenticatable {
+        var sub: SubjectClaim
+        var username: String
+        var exp: ExpirationClaim
+        
+        var teamID: UUID! {
+            UUID(uuidString: sub.value)
+        }
+        
+        func verify(using signer: JWTSigner) throws {
+            try self.exp.verifyNotExpired()
+        }
+    }
+    
+    // MARK: - JWT Authenticator
+    struct JWTAuth: JWTAuthenticator {
+        typealias Payload = Team.JWTPayload
+        
+        func authenticate(jwt: Payload, for request: Request) -> EventLoopFuture<Void> {
+            Team.find(jwt.teamID, on: request.db)
+                .map {
+                    guard $0 != nil else {
+                        return
+                    }
+                    
+                    request.auth.login(jwt)
+                }
+
         }
     }
 }
