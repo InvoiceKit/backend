@@ -139,7 +139,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
     
     struct Output: Content {
         var id: Invoice.IDValue?
-        var team: Team
+        var team: Team?
         var customer: Customer
         var address: Address
         var createdAt: Date?
@@ -162,7 +162,6 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         // Prepare return
         var ret = Output.init(
             id: id,
-            team: _parent.wrappedValue,
             customer: customer,
             address: address,
             createdAt: createdAt,
@@ -201,6 +200,13 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         
         // Set final price
         ret.final = ret.total - ret._promotion - Double(deposit ?? 0)
+        
+        return ret
+    }
+    
+    var outputPrint: Output {
+        var ret = output
+        ret.team = _parent.wrappedValue
         
         return ret
     }

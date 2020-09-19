@@ -49,13 +49,14 @@ extension GenericController where Model == Invoice {
     }
     
     static func render(_ req: Request) throws -> EventLoopFuture<View> {
-        // Get model
+        // Return
         Model.eagerLoadedQuery(on: req.db)
             .filter(try \.$id == getID(req))
             .first()
             .unwrap(or: Abort(.notFound))
-            .map(\.output)
+            .map(\.outputPrint)
             .flatMap { invoice in
+                // Render view
                 return req.view.render("invoice", invoice)
             }
     }

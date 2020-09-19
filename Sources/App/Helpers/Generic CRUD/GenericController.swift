@@ -241,12 +241,8 @@ enum GenericController<Model: APIModel> where Model.IDValue: LosslessStringConve
             try model.validate(req)
         }
         
-        print(type(of: Model.self))
-        
         // Parse model
         let content = try req.content.decode(Model.Update.self)
-        
-        print(try getID(req))
         
         // Update
         return try _findByID(req)

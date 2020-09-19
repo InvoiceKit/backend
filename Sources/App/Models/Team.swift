@@ -6,7 +6,7 @@ import Fluent
 import Vapor
 import JWT
 
-final class Team: Content, APIModel, Patchable {
+final class Team: Content, APIModel, Patchable, CustomOutput {
     // MARK: - Model
     static let schema = "teams"
     
@@ -40,13 +40,13 @@ final class Team: Content, APIModel, Patchable {
     @Field(key: "fields")
     var fields: [String]?
     
-    @Field(key: "image_url")
-    var image: String?
+    @Field(key: "image")
+    var image: Data?
     
     // MARK: - Initializers
     init() { }
     
-    init(id: UUID? = nil, name: String, username: String, passwordHash: String, company: String? = nil, address: String? = nil, city: String? = nil, website: String? = nil, fields: [String]? = nil, image: String? = nil) {
+    init(id: UUID? = nil, name: String, username: String, passwordHash: String, company: String? = nil, address: String? = nil, city: String? = nil, website: String? = nil, fields: [String]? = nil, image: Data? = nil) {
         self.id = id
         self.name = name
         self.username = username
@@ -57,6 +57,33 @@ final class Team: Content, APIModel, Patchable {
         self.website = website
         self.fields = fields
         self.image = image
+    }
+    
+    // MARK: - Output
+    struct Output: Content {
+        var id: Team.IDValue?
+        var username: String
+        var name: String?
+        var company: String?
+        var address: String?
+        var zip: String?
+        var city: String?
+        var website: String?
+        var fields: [String]?
+    }
+    
+    var output: Output {
+        .init(
+            id: id,
+            username: username,
+            name: name,
+            company: company,
+            address: address,
+            zip: zip,
+            city: city,
+            website: website,
+            fields: fields
+        )
     }
     
     // MARK: - Creation
@@ -89,7 +116,6 @@ final class Team: Content, APIModel, Patchable {
         var city: String?
         var website: String?
         var fields: [String]?
-        var image: String?
     }
     
     func update(_ update: Update) throws {
@@ -100,8 +126,11 @@ final class Team: Content, APIModel, Patchable {
         self.update(\.city, using: update.city)
         self.update(\.website, using: update.website)
         self.update(\.fields, using: update.fields)
-        self.update(\.image, using: update.image)
-        
+    }
+    
+    // MARK: - Image updating
+    struct ImageUpdate: Content {
+        var image: Data
     }
     
     // MARK: - Login request

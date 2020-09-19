@@ -13,7 +13,7 @@ struct CreateTeam: Migration {
             .field("city", .string)
             .field("website", .string)
             .field("fields", .array(of: .string))
-            .field("image_url", .string)
+            .field("image", .data)
             .unique(on: "username")
             .create()
     }

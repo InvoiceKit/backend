@@ -29,9 +29,10 @@ func routes(_ app: Application) throws {
     app.middleware.use(cors)
     app.middleware.use(error)
     
-    // Routes
+    // Routes    
     let protected = app.grouped(Team.JWTAuth())
     GenericController<Team>.setupRoutes(protected)
     GenericController<Customer>.setupRoutes(protected)
     GenericController<Invoice>.setupRoutes(protected)
+    try protected.register(collection: ChartsController())
 }

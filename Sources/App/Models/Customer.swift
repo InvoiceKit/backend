@@ -18,6 +18,9 @@ final class Customer: Content, APIModel, Relatable, Patchable {
     @Children(for: \._parent)
     var addresses: [Address]
     
+    @Children(for: \.$customer)
+    var invoices: [Invoice]
+    
     @Field(key: "first_name")
     var firstName: String?
     
@@ -99,6 +102,8 @@ final class Customer: Content, APIModel, Relatable, Patchable {
     
     // MARK: - Output
     static func eagerLoad(to builder: QueryBuilder<Customer>) -> QueryBuilder<Customer> {
-        builder.with(\.$addresses)
+        builder
+            .with(\.$addresses)
+            .with(\.$invoices)
     }
 }
