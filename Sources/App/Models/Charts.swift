@@ -46,5 +46,6 @@ struct InvoicePrices: Content {
 
 struct InvoicePrice: Content {
     var value: Double = 0
+    var total: Double = 0
     var tax: Double = 0
 }

@@ -44,15 +44,18 @@ struct ChartsController: RouteCollection {
                 switch output.status {
                     case .paid:
                         charts.invoices.paid += 1
-                        charts.prices.paid.value += output.total
+                        charts.prices.paid.value += output.no_vat
+                        charts.prices.paid.total += output.total
                         charts.prices.paid.tax += output.vat
                     case .waiting:
                         charts.invoices.waiting += 1
-                        charts.prices.waiting.value += output.total
+                        charts.prices.waiting.value += output.no_vat
+                        charts.prices.waiting.total += output.total
                         charts.prices.waiting.tax += output.vat
                     case .canceled:
                         charts.invoices.canceled += 1
-                        charts.prices.canceled.value += output.total
+                        charts.prices.canceled.value += output.no_vat
+                        charts.prices.canceled.total += output.total
                         charts.prices.canceled.tax += output.vat
                 }
                 
