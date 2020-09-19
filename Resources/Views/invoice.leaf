@@ -167,6 +167,11 @@
 
         <br>
 
+        #if(!isEmpty(additional_text)):
+        #(additional_text)
+        <br>
+        #endif
+
         #if(team.field):
         <ul>
             #for(entry in team.fields):

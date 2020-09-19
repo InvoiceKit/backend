@@ -48,6 +48,9 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
     @Field(key: "promotion")
     var promotion: Int?
     
+    @Field(key: "additional_text")
+    var additional_text: String?
+    
     // MARK: - Enums
     enum InvoiceType: String, Content {
         case invoice, quote
@@ -62,7 +65,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         
     }
     
-    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, dueDate: String?, type: InvoiceType, status: InvoiceStatus, number: String?, deposit: Double? = 0, promotion: Int? = 0) {
+    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, dueDate: String?, type: InvoiceType, status: InvoiceStatus, number: String?, deposit: Double? = 0, promotion: Int? = 0, additional_text: String? = "") {
         self.id = id
         self._parent.id = teamID
         self.$customer.id = customerID
@@ -73,6 +76,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         self.number = number
         self.deposit = deposit
         self.promotion = promotion
+        self.additional_text = additional_text
     }
     
     // MARK: - Relatable
@@ -92,6 +96,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         var number: String?
         var deposit: Double?
         var promotion: Int?
+        var additional_text: String?
     }
     
     convenience init(_ input: Input) throws {
@@ -105,7 +110,8 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
             status: input.status,
             number: input.number,
             deposit: input.deposit,
-            promotion: input.promotion
+            promotion: input.promotion,
+            additional_text: input.additional_text
         )
     }
     
@@ -117,6 +123,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         var number: String?
         var deposit: Double?
         var promotion: Int?
+        var additional_text: String?
     }
     
     func update(_ update: Update) throws {
@@ -126,6 +133,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         self.update(\.number, using: update.number)
         self.update(\.deposit, using: update.deposit)
         self.update(\.promotion, using: update.promotion)
+        self.update(\.additional_text, using: update.additional_text)
     }
     
     // MARK: - Output
@@ -151,6 +159,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         var number: String?
         var deposit: Double?
         var promotion: Int?
+        var additional_text: String?
         var no_vat: Double
         var vat: Double
         var total: Double
@@ -173,6 +182,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
             number: number,
             deposit: deposit,
             promotion: promotion,
+            additional_text: additional_text,
             no_vat: 0,
             vat: 0,
             total: 0,
