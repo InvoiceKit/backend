@@ -15,20 +15,20 @@
                     <table>
                         <tr>
                             <td class="title">
-                                <img src="#(team.image)" style="width:100%; max-width:500px;">
+                                <img src="/teams/#(team.id)/image" style="width:100%; max-width:500px;">
                             </td>
 
                             <td></td>
 
                             <td>
-                                #if(type == "invoice"): 
-                                    Facture #(number)
-                                #else(): 
-                                    Devis #(number)
+                                #if(type == "invoice"):
+                                Facture #(number)
+                                #else():
+                                Devis #(number)
                                 #endif
-                                <br> 
+                                <br>
                                 Date: <span id="date">#(createdAt)</span>
-                                #if(dueDate != ""):
+                                #if(!isEmpty(dueDate)):
                                 <br>
                                 Date d'échéance: #(dueDate)
                                 #endif
@@ -54,7 +54,7 @@
                             <td>
                                 #(customer.firstName) #(customer.lastName)<br>
                                 #if(customer.company != null):
-                                    #(customer.company)<br>
+                                #(customer.company)<br>
                                 #endif
                                 #(address.line)<br>
                                 #(address.zip), #(address.city)
@@ -119,44 +119,44 @@
             </tr>
 
             #if(promotion > 0):
-                <tr>
-                    <td></td>
+            <tr>
+                <td></td>
 
-                    <td align="right">
-                       Remise commerciale:
-                    </td>
+                <td align="right">
+                    Remise commerciale:
+                </td>
 
-                    <td align="left">
-                        - #getFixed(promotion) €
-                    </td>
-                </tr>
+                <td align="left">
+                    - #getFixed(promotion) €
+                </td>
+            </tr>
             #endif
 
             #if(deposit > 0):
-                <tr>
-                    <td></td>
+            <tr>
+                <td></td>
 
-                    <td align="right">
-                       Acompte: 
-                    </td>
+                <td align="right">
+                    Acompte:
+                </td>
 
-                    <td align="left">
-                        - #getFixed(deposit) €
-                    </td>
-                </tr>
+                <td align="left">
+                    - #getFixed(deposit) €
+                </td>
+            </tr>
             #endif
 
             <tr>
                 <td></td>
 
                 <td align="right">
-                <b>
-                    #if(type == "quote"):
+                    <b>
+                        #if(type == "quote"):
                         Total:
-                    #else():
+                        #else():
                         Reste à payer:
-                    #endif
-                </b>
+                        #endif
+                    </b>
                 </td>
 
                 <td align="left">
@@ -170,7 +170,7 @@
         #if(team.field):
         <ul>
             #for(entry in team.fields):
-                <li>#(entry)</li>
+            <li>#(entry)</li>
             #endfor
         </ul>
         #endif

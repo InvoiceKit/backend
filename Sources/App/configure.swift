@@ -22,6 +22,7 @@ public func configure(_ app: Application) throws {
 
     // Add leaf tags
     app.leaf.tags[DoubleFix.name] = DoubleFix()
+    app.leaf.tags[IsEmptyTag.name] = IsEmptyTag()
     
     // Add migrations
     app.migrations.add(CreateTeam())
