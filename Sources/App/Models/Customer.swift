@@ -21,6 +21,9 @@ final class Customer: Content, APIModel, Relatable, Patchable {
     @Children(for: \.$customer)
     var invoices: [Invoice]
     
+    @Children(for: \.$customer)
+    var contracts: [Contract]
+    
     @Field(key: "first_name")
     var firstName: String?
     
@@ -103,5 +106,6 @@ final class Customer: Content, APIModel, Relatable, Patchable {
         builder
             .with(\.$addresses)
             .with(\.$invoices)
+            .with(\.$contracts)
     }
 }
