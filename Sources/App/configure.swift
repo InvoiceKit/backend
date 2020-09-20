@@ -29,7 +29,6 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateCustomer())
     app.migrations.add(CreateAddress())
     app.migrations.add(CreateInvoice())
-    app.migrations.add(CreateInvoiceField())
     app.migrations.add(CreateContract())
     
     // Enable auto-migrations
