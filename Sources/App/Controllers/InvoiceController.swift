@@ -11,7 +11,7 @@ import Vapor
 extension GenericController where Model == Invoice {
     @discardableResult
     static func setupRoutes(_ builder: RoutesBuilder) -> RoutesBuilder {
-        let root = Builder(builder.grouped(schemaPath))
+        Builder(builder.grouped(schemaPath))
             .set { $0.get(use: protected(using: Team.JWTPayload.self, handler: _readAll)) }
             .set { $0.put(use: protected(using: Team.JWTPayload.self, handler: _create)) }
             .set { $0.grouped(idPath) }
@@ -26,24 +26,6 @@ extension GenericController where Model == Invoice {
             }
             .set {
                 $0.delete(use: protected(using: Team.JWTPayload.self, handler: _deleteByID))
-            }
-        
-        // Breaking up expression, too long for compiler
-        return root
-            .set {
-                $0.grouped(GenericController<InvoiceField>.schemaPath)
-            }
-            .set {
-                $0.put(use: protected(using: Team.JWTPayload.self, handler: GenericController<InvoiceField>._create))
-            }
-            .set {
-                $0.grouped(GenericController<InvoiceField>.childrenPath)
-            }
-            .set {
-                $0.patch(use: protected(using: Team.JWTPayload.self, handler: GenericController<InvoiceField>._updateByID))
-            }
-            .set {
-                $0.delete(use: protected(using: Team.JWTPayload.self, handler: GenericController<InvoiceField>._deleteByID))
             }
             .build()
     }

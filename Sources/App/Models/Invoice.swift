@@ -21,8 +21,8 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
     @Parent(key: "address_id")
     var address: Address
     
-    @Children(for: \._parent)
-    var fields: [InvoiceField]
+    @Field(key: "fields")
+    var fields: [InvoiceField]?
     
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -51,13 +51,21 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
     @Field(key: "additional_text")
     var additional_text: String?
     
-    // MARK: - Enums
+    // MARK: - Type
     enum InvoiceType: String, Content {
         case invoice, quote
     }
     
+    // MARK: - Status
     enum InvoiceStatus: String, Content {
         case paid, waiting, canceled
+    }
+    
+    // MARK: - Field
+    struct InvoiceField: Codable {
+        var name: String
+        var price: Double
+        var vat: Double
     }
     
     // MARK: - Initializers
@@ -65,7 +73,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         
     }
     
-    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, dueDate: String?, type: InvoiceType, status: InvoiceStatus, number: String?, deposit: Double? = 0, promotion: Int? = 0, additional_text: String? = "") {
+    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, dueDate: String?, type: InvoiceType, status: InvoiceStatus, fields: [InvoiceField]?, number: String?, deposit: Double? = 0, promotion: Int? = 0, additional_text: String? = "") {
         self.id = id
         self._parent.id = teamID
         self.$customer.id = customerID
@@ -73,6 +81,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         self.dueDate = dueDate
         self.type = type
         self.status = status
+        self.fields = fields
         self.number = number
         self.deposit = deposit
         self.promotion = promotion
@@ -91,6 +100,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         var dueDate: String?
         var type: InvoiceType
         var status: InvoiceStatus
+        var fields: [InvoiceField]?
         var number: String?
         var deposit: Double?
         var promotion: Int?
@@ -106,6 +116,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
             dueDate: input.dueDate,
             type: input.type,
             status: input.status,
+            fields: input.fields,
             number: input.number,
             deposit: input.deposit,
             promotion: input.promotion,
@@ -118,6 +129,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         var dueDate: String?
         var type: InvoiceType
         var status: InvoiceStatus
+        var fields: [InvoiceField]?
         var number: String?
         var deposit: Double?
         var promotion: Int?
@@ -128,6 +140,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         self.update(\.dueDate, using: update.dueDate)
         self.update(\.type, using: update.type)
         self.update(\.status, using: update.status)
+        self.update(\.fields, using: update.fields)
         self.update(\.number, using: update.number)
         self.update(\.deposit, using: update.deposit)
         self.update(\.promotion, using: update.promotion)
@@ -137,7 +150,6 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
     // MARK: - Output
     static func eagerLoad(to builder: QueryBuilder<Invoice>) -> QueryBuilder<Invoice> {
         builder
-            .with(\.$fields)
             .with(\._parent)
             .with(\.$customer)
             .with(\.$address)
@@ -153,7 +165,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         var dueDate: String?
         var type: InvoiceType
         var status: InvoiceStatus
-        var fields: [InvoiceField]
+        var fields: [InvoiceField]?
         var number: String?
         var deposit: Double?
         var promotion: Int?
@@ -189,16 +201,18 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         )
         
         // Get every fields
-        for field in fields {
-            // Add no_vat
-            ret.no_vat += field.price
-            
-            // Get vat
-            let vat = (field.price * Double(field.vat)) / 100
-            ret.vat += vat
-            
-            // Set total
-            ret.total += vat + field.price
+        if let fields = fields {
+            for field in fields {
+                // Add no_vat
+                ret.no_vat += field.price
+                
+                // Get vat
+                let vat = (field.price * field.vat) / 100
+                ret.vat += vat
+                
+                // Set total
+                ret.total += vat + field.price
+            }
         }
         
         // Calculate promotion

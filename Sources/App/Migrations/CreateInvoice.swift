@@ -22,6 +22,7 @@ struct CreateInvoice: Migration {
             .field("due_date", .date)
             .field("type", .string, .required)
             .field("status", .string, .required)
+            .field("fields", .array)
             .field("number", .string)
             .field("deposit", .double)
             .field("promotion", .int)
