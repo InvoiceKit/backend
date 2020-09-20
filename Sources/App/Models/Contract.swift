@@ -61,8 +61,8 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, type: String, serial: String, status: ContractStatus = .ongoing, changes: [ContractChange]?, date: String?) {
         self.id = id
         self._parent.id = teamID
-        self.customer.id = customerID
-        self.address.id = addressID
+        self.$customer.id = customerID
+        self.$address.id = addressID
         self.type = type
         self.serial = serial
         self.status = status
@@ -121,6 +121,7 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     // MARK: - Output
     static func eagerLoad(to builder: QueryBuilder<Contract>) -> QueryBuilder<Contract> {
         builder
-            .with(\._parent)
+            .with(\.$customer)
+            .with(\.$address)
     }
 }
