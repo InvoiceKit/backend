@@ -12,6 +12,9 @@ struct Charts: Content {
     // Daily invoices
     var daily: [String: Int]
     
+    // Daily contracts
+    var contracts: [String: Int]
+    
     // Number of invoices
     var invoices: InvoiceStats
     
