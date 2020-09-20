@@ -22,7 +22,7 @@ struct ChartsController: RouteCollection {
         let payload = try req.auth.require(Team.JWTPayload.self)
         
         // Generate charts
-        var charts = Charts(invoices: InvoiceStats(), prices: InvoicePrices())
+        var charts = Charts(daily: [String:Int](), invoices: InvoiceStats(), prices: InvoicePrices())
         
         // Add customers
         let _ = Customer.query(on: req.db)
@@ -31,6 +31,28 @@ struct ChartsController: RouteCollection {
             .whenSuccess { count in
                 charts.customers = count
             }
+        
+        var date = Date()
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .none
+        
+        for _ in 1 ... 14 {
+            // Get last day date
+            let last = date.addingTimeInterval(-24 * 60 * 60)
+            
+            // Search in the database
+            Invoice.query(on: req.db)
+                .filter(\.$createdAt >= last)
+                .filter(\.$createdAt <= date)
+                .count()
+                .whenSuccess { count in
+                    charts.daily[formatter.string(from: last)] = count
+                }
+            
+            // Assign date
+            date = last
+        }
         
         // Get invoices
         return Invoice.eagerLoadedQuery(on: req.db)

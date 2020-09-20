@@ -9,6 +9,9 @@ import Vapor
 import Fluent
 
 struct Charts: Content {
+    // Daily invoices
+    var daily: [String: Int]
+    
     // Number of invoices
     var invoices: InvoiceStats
     
