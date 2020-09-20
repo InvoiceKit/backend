@@ -34,5 +34,6 @@ func routes(_ app: Application) throws {
     GenericController<Team>.setupRoutes(protected)
     GenericController<Customer>.setupRoutes(protected)
     GenericController<Invoice>.setupRoutes(protected)
+    GenericController<Contract>.setupRoutes(protected)
     try protected.register(collection: ChartsController())
 }
