@@ -27,11 +27,8 @@ final class InvoiceField: Content, APIModel, Patchable, Relatable {
     @Field(key: "price")
     var price: Double
     
-    // MARK: - Children
+    // MARK: - Relatable
     static var isChildren = true
-    
-    // MARK: - Parent
-    typealias ParentType = Invoice
     
     var _parent: Parent<Invoice> = Parent(key: "invoice_id")
     

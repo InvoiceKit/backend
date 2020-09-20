@@ -36,9 +36,7 @@ final class Customer: Content, APIModel, Relatable, Patchable {
     @Field(key: "email")
     var email: String?
     
-    // MARK: - Parent
-    typealias ParentType = Team
-    
+    // MARK: - Parent    
     static var isAuthChildren = true
     
     var _parent: Parent<Team> = Parent(key: "team_id")

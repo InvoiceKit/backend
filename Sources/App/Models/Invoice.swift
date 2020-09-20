@@ -79,9 +79,7 @@ final class Invoice: APIModel, Relatable, Patchable, CustomOutput {
         self.additional_text = additional_text
     }
     
-    // MARK: - Relatable
-    typealias ParentType = Team
-    
+    // MARK: - Relatable    
     static var isAuthChildren = true
     
     var _parent: Parent<Team> = Parent(key: "team_id")

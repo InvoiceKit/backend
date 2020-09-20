@@ -24,11 +24,8 @@ final class Address: Content, APIModel, Relatable {
     @Field(key: "city")
     var city: String
     
-    // MARK: - Children
+    // MARK: - Relatable
     static var isChildren = true
-    
-    // MARK: - Parent
-    typealias ParentType = Customer
     
     var _parent: Parent<Customer> = Parent(key: "customer_id")
     
