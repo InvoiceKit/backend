@@ -15,6 +15,12 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     @ID(key: .id)
     var id: UUID?
     
+    @Parent(key: "customer_id")
+    var customer: Customer
+    
+    @Parent(key: "address_id")
+    var address: Address
+    
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
     
@@ -52,9 +58,11 @@ final class Contract: Content, APIModel, Relatable, Patchable {
         
     }
     
-    init(id: UUID? = nil, customerID: Customer.IDValue, type: String, serial: String, status: ContractStatus = .ongoing, changes: [ContractChange]?, date: String?) {
+    init(id: UUID? = nil, teamID: Team.IDValue, customerID: Customer.IDValue, addressID: Address.IDValue, type: String, serial: String, status: ContractStatus = .ongoing, changes: [ContractChange]?, date: String?) {
         self.id = id
-        self._parent.id = customerID
+        self._parent.id = teamID
+        self.customer.id = customerID
+        self.address.id = addressID
         self.type = type
         self.serial = serial
         self.status = status
@@ -65,10 +73,14 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     // MARK: - Relatable
     static var isChildren = true
     
-    var _parent: Parent<Customer> = Parent(key: "customer_id")
+    static var isAuthChildren = true
+    
+    var _parent: Parent<Team> = Parent(key: "team_id")
     
     // MARK: - Input
     struct Input: Content {
+        var customerID: Customer.IDValue
+        var addressID: Address.IDValue
         var type: String
         var serial: String
         var status: ContractStatus
@@ -78,7 +90,9 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     
     convenience init(_ input: Input) throws {
         self.init(
-            customerID: UUID(),
+            teamID: UUID(),
+            customerID: input.customerID,
+            addressID: input.addressID,
             type: input.type,
             serial: input.serial,
             status: input.status,
@@ -88,9 +102,15 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     }
     
     // MARK: - Patchable
-    typealias Update = Input
+    struct Update: Content {
+        var type: String
+        var serial: String
+        var status: ContractStatus
+        var changes: [ContractChange]?
+        var date: String?
+    }
     
-    func update(_ update: Input) throws {
+    func update(_ update: Update) throws {
         self.update(\.type, using: update.type)
         self.update(\.serial, using: update.serial)
         self.update(\.status, using: update.status)
@@ -99,5 +119,8 @@ final class Contract: Content, APIModel, Relatable, Patchable {
     }
     
     // MARK: - Output
-    
+    static func eagerLoad(to builder: QueryBuilder<Contract>) -> QueryBuilder<Contract> {
+        builder
+            .with(\._parent)
+    }
 }

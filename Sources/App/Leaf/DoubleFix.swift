@@ -17,6 +17,4 @@ struct DoubleFix: LeafTag {
         
         return .string(String(format: "%.2f", number))
     }
-    
-    
 }
