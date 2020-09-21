@@ -1,6 +1,5 @@
 import Fluent
 import FluentPostgresDriver
-import FluentSQLiteDriver
 import Vapor
 import Leaf
 import JWT
@@ -9,24 +8,21 @@ import JWT
 public func configure(_ app: Application) throws {
     // Public folder
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
-
-    // Setup SQLite
-    if app.environment == .testing {
-        app.databases.use(.sqlite(.memory), as: .sqlite)
-    } else {
-        guard let databaseURL = Environment.get("DATABASE_URL") else {
-            throw "Cannot fetch database URL from env"
-        }
-        
-        app.databases.use(try .postgres(
-            url: databaseURL
-        ), as: .psql)
+    
+    // Setup Postgres
+    guard let databaseURL = Environment.get("DATABASE_URL") else {
+        throw "Cannot fetch database URL from env"
     }
+    
+    app.databases.use(try .postgres(
+        url: databaseURL
+    ), as: .psql)
+    
     
     // Enable Leaf
     app.views.use(.leaf)
     app.leaf.cache.isEnabled = app.environment.isRelease
-
+    
     // Add leaf tags
     app.leaf.tags[DoubleFix.name] = DoubleFix()
     app.leaf.tags[IsEmptyTag.name] = IsEmptyTag()
@@ -40,7 +36,7 @@ public func configure(_ app: Application) throws {
     
     // Enable auto-migrations
     try app.autoMigrate().wait()
-
+    
     if app.environment == .testing || app.environment == .development {
         // Setup JWT with a static key
         app.jwt.signers.use(.hs256(key: "secret"))
