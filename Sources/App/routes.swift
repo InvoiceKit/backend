@@ -31,6 +31,7 @@ func routes(_ app: Application) throws {
     
     // Routes    
     let protected = app.grouped(Team.JWTAuth())
+    GenericController<Message>.setupRoutes(protected)
     GenericController<Team>.setupRoutes(protected)
     GenericController<Customer>.setupRoutes(protected)
     GenericController<Invoice>.setupRoutes(protected)

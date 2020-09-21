@@ -33,6 +33,7 @@ public func configure(_ app: Application) throws {
     app.migrations.add(CreateAddress())
     app.migrations.add(CreateInvoice())
     app.migrations.add(CreateContract())
+    app.migrations.add(CreateMessage())
     
     // Enable auto-migrations
     try app.autoMigrate().wait()
