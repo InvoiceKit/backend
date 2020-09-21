@@ -1,5 +1,6 @@
 import Fluent
 import FluentPostgresDriver
+import FluentSQLiteDriver
 import Vapor
 import Leaf
 import JWT

@@ -126,7 +126,7 @@ enum GenericController<Model: APIModel> where Model.IDValue: LosslessStringConve
     static func _prepareModel(_ req: Request) throws -> Model {
         // Check content
         if let input = Model.Input.self as? Validatable.Type {
-            try input.validate(req)
+            try input.validate(content: req)
         }
         
         // Get input model
@@ -238,7 +238,7 @@ enum GenericController<Model: APIModel> where Model.IDValue: LosslessStringConve
     static func _updateByID(_ req: Request) throws -> EventLoopFuture<Model> where Model: Patchable {
         // Check content
         if let model = Model.Update.self as? Validatable.Type {
-            try model.validate(req)
+            try model.validate(content: req)
         }
         
         // Parse model
