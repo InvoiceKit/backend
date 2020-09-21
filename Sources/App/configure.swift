@@ -1,5 +1,5 @@
 import Fluent
-import FluentSQLiteDriver
+import FluentPostgresDriver
 import Vapor
 import Leaf
 import JWT
@@ -13,7 +13,13 @@ public func configure(_ app: Application) throws {
     if app.environment == .testing {
         app.databases.use(.sqlite(.memory), as: .sqlite)
     } else {
-        app.databases.use(.sqlite(.file("db.sqlite")), as: .sqlite)
+        guard let databaseURL = Environment.get("DATABASE_URL") else {
+            throw "Cannot fetch database URL from env"
+        }
+        
+        app.databases.use(try .postgres(
+            url: databaseURL
+        ), as: .psql)
     }
     
     // Enable Leaf
