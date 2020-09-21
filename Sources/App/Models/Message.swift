@@ -8,12 +8,15 @@
 import Vapor
 import Fluent
 
-final class Message: APIModel, Content, Relatable {
+final class Message: APIModel, Content {
     // MARK: - Model
     static var schema = "messages"
     
     @ID(key: .id)
     var id: UUID?
+    
+    @Parent(key: "team_id")
+    var team: Team
     
     @Timestamp(key: "created_at", on: .create)
     var createdAt: Date?
@@ -36,11 +39,6 @@ final class Message: APIModel, Content, Relatable {
     @Field(key: "text")
     var text: String?
     
-    // MARK: - Relatable
-    static var isAuthChildren = true
-    
-    var _parent: Parent<Team> = Parent(key: "team_id")
-    
     // MARK: - Initializers
     init() {
         
@@ -48,7 +46,7 @@ final class Message: APIModel, Content, Relatable {
     
     init(id: UUID? = nil, teamID: UUID, firstName: String?, lastName: String?, email: String?, phone: String?, address: String?, text: String?) {
         self.id = id
-        self._parent.id = teamID
+        self.$team.id = teamID
         self.firstName = firstName
         self.lastName = lastName
         self.email = email

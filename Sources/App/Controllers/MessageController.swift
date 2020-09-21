@@ -14,7 +14,7 @@ extension GenericController where Model == Message {
         return Builder(builder.grouped(schemaPath))
             .set { $0.get(use: protected(using: Team.JWTPayload.self, handler: _readAll)) }
             .set { $0.put(use: _create) }
-            .set { $0.grouped(childrenPath) }
+            .set { $0.grouped(idPath) }
             .set {
                 $0.get(use: protected(using: Team.JWTPayload.self, handler: _readByID))
             }
