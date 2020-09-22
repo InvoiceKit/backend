@@ -10,14 +10,15 @@ public func configure(_ app: Application) throws {
     app.middleware.use(FileMiddleware(publicDirectory: app.directory.publicDirectory))
     
     // Setup Postgres
-    guard let databaseURL = Environment.get("DATABASE_URL") else {
-        throw "Cannot fetch database URL from env"
+    if let databaseURL = Environment.get("DATABASE_URL") {
+        app.databases.use(try .postgres(
+            url: databaseURL
+        ), as: .psql)
+    } else {
+        app.databases.use(.postgres(
+            hostname: "localhost", username: "vico", password: ""
+        ), as: .psql)
     }
-    
-    app.databases.use(try .postgres(
-        url: databaseURL
-    ), as: .psql)
-    
     
     // Enable Leaf
     app.views.use(.leaf)
