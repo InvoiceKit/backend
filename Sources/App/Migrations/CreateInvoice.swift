@@ -22,7 +22,7 @@ struct CreateInvoice: Migration {
             .field("due_date", .string)
             .field("type", .string, .required)
             .field("status", .string, .required)
-            .field("fields", .array)
+            .field("fields", .custom("jsonb[]"))
             .field("number", .string)
             .field("deposit", .double)
             .field("promotion", .int)
