@@ -16,7 +16,7 @@ public func configure(_ app: Application) throws {
         ), as: .psql)
     } else {
         app.databases.use(.postgres(
-            hostname: "localhost", username: "vico", password: ""
+            hostname: "localhost", username: "postgres", password: ""
         ), as: .psql)
     }
     
