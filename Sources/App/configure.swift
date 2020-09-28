@@ -44,7 +44,7 @@ public func configure(_ app: Application) throws {
         app.jwt.signers.use(.hs256(key: "secret"))
     } else {
         // Setup JWT with a random key per start
-        app.jwt.signers.use(.hs256(key: String.random(length: 64)))
+        app.jwt.signers.use(.hs256(key: "PV%BaRD]An?L_5V'@_<Y4aM%1L2Irxm>_g,Y[|~Q#g(>Fr:j_tKM7J/``nzn'*-"))
     }
     
     
