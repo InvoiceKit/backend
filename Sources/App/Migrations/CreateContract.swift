@@ -22,7 +22,7 @@ struct CreateContract: Migration {
             .field("type", .string, .required)
             .field("serial", .string, .required)
             .field("status", .string, .required)
-            .field("changes", .array)
+            .field("changes", .custom("jsonb[]"))
             .field("date", .string)
             .create()
     }
