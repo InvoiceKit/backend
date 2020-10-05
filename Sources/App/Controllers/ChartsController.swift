@@ -32,6 +32,14 @@ struct ChartsController: RouteCollection {
                 charts.customers = count
             }
         
+        // Add contracts
+        let _ = Contract.query(on: req.db)
+            .filter(\._parent.$id == payload.teamID)
+            .count()
+            .whenSuccess { count in
+                charts.contracts_count = count
+            }
+        
         var date = Date()
         let formatter = DateFormatter()
         formatter.dateStyle = .short

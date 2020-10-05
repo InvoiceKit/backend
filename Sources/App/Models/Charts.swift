@@ -23,6 +23,9 @@ struct Charts: Content {
     
     // Number of clients
     var customers: Int = 0
+    
+    // Number of contracts
+    var contracts_count: Int = 0
 }
 
 struct InvoiceStats: Content {
