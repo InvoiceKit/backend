@@ -70,7 +70,7 @@ final class Customer: Content, APIModel, Relatable, Patchable {
     
     convenience init(_ input: Input) throws {
         // Check company or names
-        if input.lastName == nil && input.company == nil {
+        if input.lastName?.isEmpty ?? true && input.company?.isEmpty ?? true {
             throw Abort(.badRequest, reason: "lastName or company must be filled")
         }
         
@@ -90,7 +90,7 @@ final class Customer: Content, APIModel, Relatable, Patchable {
     
     func update(_ update: Update) throws {
         // Check company or names
-        if update.lastName == nil && update.company == nil {
+        if update.lastName?.isEmpty ?? true && update.company?.isEmpty ?? true {
             throw Abort(.badRequest, reason: "lastName or company must be filled")
         }
         
